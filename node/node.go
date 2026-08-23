@@ -12,4 +12,5 @@ type Node struct {
 	ID          int
 	ServerState ServerState
 	Term        int
+	VotedFor    int
 }
