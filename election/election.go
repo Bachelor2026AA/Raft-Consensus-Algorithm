@@ -39,6 +39,11 @@ func StartElection(servers []node.Node) {
 }
 
 func RequestVote(candidate *node.Node, server *node.Node) int {
+	if server.ServerState == node.Disconnected {
+		fmt.Println("I cant communicate with this Node")
+		return -1
+	}
+	var nobody int = 0
 	var notvoted int = 0
 	var notgranted int = 0
 	var granted int = 1
@@ -51,6 +56,7 @@ func RequestVote(candidate *node.Node, server *node.Node) int {
 	if server.Term < candidate.Term {
 		server.Term = candidate.Term
 		fmt.Println("Since a new term has started im joining that term")
+		server.VotedFor = nobody
 	}
 
 	if server.Term > candidate.Term {
@@ -73,6 +79,7 @@ func RequestVote(candidate *node.Node, server *node.Node) int {
 	server.VotedFor = candidate.ID
 	return granted
 }
+
 func CollectVotes(servers []node.Node, candidate *node.Node) int {
 	var granted = 1
 	var count int = 1
@@ -103,7 +110,7 @@ func KillLeader(servers []node.Node) {
 	for index, votes := range servers {
 		if votes.ServerState == node.Leader {
 			leader := &servers[index]
-			leader.ServerState = node.Follower
+			leader.ServerState = node.Disconnected
 		}
 	}
 }

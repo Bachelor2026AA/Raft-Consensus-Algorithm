@@ -6,6 +6,7 @@ const (
 	Follower ServerState = iota
 	Candidate
 	Leader
+	Disconnected
 )
 
 type Node struct {
