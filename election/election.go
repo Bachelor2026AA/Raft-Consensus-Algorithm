@@ -30,7 +30,7 @@ func SelectCandidate(servers []node.Node) *node.Node {
 func StartElection(servers []node.Node) {
 	var candidate = SelectCandidate(servers)
 	var votes = CollectVotes(servers, candidate)
-	var answers = majorityVote(len(servers), votes)
+	var answers = MajorityVote(len(servers), votes)
 	if answers {
 		candidate.ServerState = node.Leader
 	} else {
@@ -88,7 +88,7 @@ func CollectVotes(servers []node.Node, candidate *node.Node) int {
 	return count
 }
 
-func majorityVote(numofservers int, votes int) bool {
+func MajorityVote(numofservers int, votes int) bool {
 	fmt.Println("Calculating if majority has been achieved")
 	if votes >= numofservers/2+1 {
 		fmt.Println("majority was achieved")
@@ -96,4 +96,14 @@ func majorityVote(numofservers int, votes int) bool {
 	}
 	fmt.Println("majority was not achieved")
 	return false
+}
+
+func KillLeader(servers []node.Node) {
+
+	for index, votes := range servers {
+		if votes.ServerState == node.Leader {
+			leader := &servers[index]
+			leader.ServerState = node.Follower
+		}
+	}
 }
