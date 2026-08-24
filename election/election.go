@@ -4,10 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"raft-consensus/node"
-	"time"
 )
-
-var currentTerm int
 
 func PrepareNodes(servers []node.Node) {
 	var nobody = 0
@@ -22,6 +19,7 @@ func SelectCandidate(servers []node.Node) *node.Node {
 	if state.ServerState == node.Follower {
 		state.ServerState = node.Candidate
 		state.VotedFor = state.ID
+		state.Term++
 	}
 	var candidate = state.ID
 	fmt.Printf("Suitble candidate has been found the candidate is node nr %d\n", candidate)
@@ -29,38 +27,16 @@ func SelectCandidate(servers []node.Node) *node.Node {
 	return state
 }
 
-//func Voting(servers []node.Node, candidate *node.Node) int {
-	var vote int
-	var chosen = candidate
-	vote = 1 // as the candidate votes for himself
-	for index, votes := range servers {
-		var check = 0
-		if votes.ID == chosen.ID {
-			continue
-		} else {
-			fmt.Printf("Did you want to vote for this candidate? nr %d\n", votes.ID)
-			check = rand.Intn(2)
-			if check == 1 && votes.VotedFor == 0 {
-				fmt.Println("yes")
-				vote += 1
-				servers[index].VotedFor = candidate.ID
-				fmt.Printf("I cant vote again i have voted for %d\n", candidate.ID)
-			} else {
-				fmt.Println("No")
-			}
-		}
-	}
-	return vote
-//}
-
 func StartElection(servers []node.Node) {
-	PrepareNodes(servers)
 	var candidate = SelectCandidate(servers)
-	} 
-
-	
-
-
+	var votes = CollectVotes(servers, candidate)
+	var answers = majorityVote(len(servers), votes)
+	if answers {
+		candidate.ServerState = node.Leader
+	} else {
+		fmt.Println("Election Failed")
+	}
+}
 
 func RequestVote(candidate *node.Node, server *node.Node) int {
 	var notvoted int = 0
