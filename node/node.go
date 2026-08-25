@@ -17,8 +17,7 @@ type Node struct {
 }
 
 func newNode(ID int) *Node {
-	p := new(Node)
-	p.ID = ID
-	p.ServerState = Follower
-	return p
+	return &Node{
+	ID = ID,
+	ServerState = Follower}
 }
