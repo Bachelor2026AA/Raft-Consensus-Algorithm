@@ -16,7 +16,7 @@ type Node struct {
 	VotedFor    int
 }
 
-func newNode(ID int) *Node {
+func New(ID int) *Node {
 	return &Node{
 	ID = ID,
 	ServerState = Follower}
