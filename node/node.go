@@ -15,3 +15,10 @@ type Node struct {
 	Term        int
 	VotedFor    int
 }
+
+func newNode(ID int) *Node {
+	p := new(Node)
+	p.ID = ID
+	p.ServerState = Follower
+	return p
+}
