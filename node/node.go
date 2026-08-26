@@ -15,3 +15,10 @@ type Node struct {
 	Term        int
 	VotedFor    int
 }
+
+func New(ID int) *Node {
+	return &Node{
+		ID:          ID,
+		ServerState: Follower,
+	}
+}
