@@ -18,6 +18,7 @@ type Node struct {
 
 func New(ID int) *Node {
 	return &Node{
-	ID = ID,
-	ServerState = Follower}
+		ID:          ID,
+		ServerState: Follower,
+	}
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"raft-consensus/election"
 	"raft-consensus/leaderchecker"
 	"raft-consensus/node"
 )
@@ -13,7 +12,6 @@ func main() {
 		{ID: 3, ServerState: node.Follower},
 		{ID: 4, ServerState: node.Follower}}
 	leaderchecker.LeaderCheck(servers)
-	election.KillLeader(servers)
 	leaderchecker.LeaderCheck(servers)
 
 }
