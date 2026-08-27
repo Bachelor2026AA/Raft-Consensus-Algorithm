@@ -104,13 +104,3 @@ func MajorityVote(numofservers int, votes int) bool {
 	fmt.Println("majority was not achieved")
 	return false
 }
-
-func KillLeader(servers []node.Node) {
-
-	for index, votes := range servers {
-		if votes.ServerState == node.Leader {
-			leader := &servers[index]
-			leader.ServerState = node.Disconnected
-		}
-	}
-}
