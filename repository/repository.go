@@ -7,10 +7,10 @@ import (
 )
 
 type LogEntryRepository interface {
-	append(ctx context.Context, index int) error
-	get(ctx context.Context) error
-	getFromIndex(ctx context.Context) error
-	deleteFromIndex(ctx context.Context) error
+	Append(ctx context.Context, command string) error
+	Get(ctx context.Context) error
+	GetFromIndex(ctx context.Context, index int) error
+	DeleteFromIndex(ctx context.Context) error
 }
 
 type LogEntryRepositoryImpl struct {

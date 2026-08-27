@@ -1,0 +1,21 @@
+@startuml
+class Node {
+}
+
+class LogEntry {
+
+}
+
+class Handler {
+
+}
+
+
+interface KeyValueRepository
+
+interface LogEntryRepository
+Handler *- Node
+Handler *- KeyValueRepository
+Handler *- LogEntryRepository
+Handler --> LogEntry
+@enduml

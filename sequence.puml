@@ -1,0 +1,53 @@
+@startuml
+
+actor Client
+
+
+participant Node
+
+participant Node_n
+
+activate Node
+loop until majority reached
+Node -> Node: Start election
+
+Node -> Node_n: VoteRequest
+
+activate Node_n
+
+Node_n --> Node: VoteResponse
+end
+deactivate Node_n
+
+
+Node -> Node: ReplicateLog
+
+
+
+Node -> Node_n: AppendEntries
+activate Node_n
+Node_n --> Node : LogResponse
+deactivate Node
+deactivate Node_n
+Client -> Node: BroadcastMessage 
+activate Node
+Node -> Node: ReplicateLog
+Node -> Node_n: AppendEntries
+
+
+Node_n --> Node : LogResponse
+Node --> Node : CommitLogEntries
+
+deactivate Node
+
+loop 
+Node -> Node: ReplicateLog
+activate Node
+Node -> Node_n: AppendEntries
+
+
+Node_n --> Node : LogResponse
+Node --> Node : CommitLogEntries
+deactivate Node
+end
+@enduml
