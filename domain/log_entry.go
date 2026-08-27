@@ -6,8 +6,6 @@ type LogEntry struct {
 	Index   int
 	Term    int
 	Command string
-	Key     string
-	Value   int
 }
 
 func (rl *LogEntry) Validate() error {

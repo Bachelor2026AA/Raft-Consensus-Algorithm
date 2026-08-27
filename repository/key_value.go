@@ -1,0 +1,47 @@
+package repository
+
+import (
+	"context"
+	"fmt"
+
+	bolt "go.etcd.io/bbolt"
+)
+
+type KeyValueRepository interface {
+	CreateBucket(ctx context.Context)
+	create(ctx context.Context, key string, value int) error
+	get(ctx context.Context, key string) error
+	update(ctx context.Context, key string, value int) error
+	delete(ctx context.Context, key string) error
+}
+
+type KeyValueRepositoryImpl struct {
+	db *bolt.DB
+}
+
+func (r *KeyValueRepositoryImpl) CreateBucket(ctx context.Context) {
+	err := r.db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte("KeyValue"))
+		if err != nil {
+			return fmt.Errorf("Create Bucket has failed %s", err)
+		}
+		return nil
+	})
+}
+
+func (r *KeyValueRepositoryImpl) Create(ctx context.Context, key string, value int) error {
+	return r.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("KeyValue"))
+		err := b.Put([]byte(key), []byte(string(value)))
+		if err != nil {
+			return fmt.Errorf("Create Bucket has failed %s", err)
+		}
+		return nil
+	})
+}
+
+func (r *KeyValueRepositoryImpl) save(ctx context.Context) {
+	err := db.Batch(func(tx *bolt.Tx) error {
+		return nil
+	})
+}
