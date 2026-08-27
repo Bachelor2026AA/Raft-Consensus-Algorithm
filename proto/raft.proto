@@ -20,6 +20,7 @@ message RequestVoteResponse {
 message AppendEntryRequest {
     int32 term = 1;
     repeated string entry = 2;
+    int32 leadercommit = 3;
 }
 
 message AppendEntryResponse {
