@@ -20,5 +20,8 @@ func (r *RaftServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest
 }
 
 func (r *RaftServer) AppendEntries(ctx context.Context, req *pb.AppendEntryRequest) (*pb.AppendEntryResponse, error) {
+	log	
+	prefix := 
 
+	
 }

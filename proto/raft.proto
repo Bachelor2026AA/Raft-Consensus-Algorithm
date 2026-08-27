@@ -17,12 +17,22 @@ message RequestVoteResponse {
     bool vote_granted = 2;
 }
 
-message AppendEntryRequest {
+message Log{
     int32 term = 1;
-    repeated string entry = 2;
-    int32 leadercommit = 3;
+    bytes data = 2;
+}
+
+message AppendEntriesRequest {
+    int32 leaderId = 1;
+    int32 term = 2;
+    int32 prefixLen = 3;
+    int32 prefixTerm = 4;
+    int32 leaderCommit =5; 
+    repeated int32 suffix = 6;
 }
 
 message AppendEntryResponse {
-
+    int32 term = 1;
+    int32 ack = 2;
+    bool success = 3;
 }
