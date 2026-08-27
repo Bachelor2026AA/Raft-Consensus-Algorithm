@@ -1,24 +1,44 @@
 package node
 
-type ServerState int
+import "raft-consensus/domain"
+
+type Role int
 
 const (
-	Follower ServerState = iota
+	Follower Role = iota
 	Candidate
 	Leader
-	Disconnected
 )
 
 type Node struct {
-	ID          int
-	ServerState ServerState
-	Term        int
-	VotedFor    int
+	// persist if crashed
+
+	ID           int
+	CurrentTerm  int
+	VotedFor     int
+	Logs         []domain.Log
+	CommitLength int
+
+	// reset on crash
+
+	CurrentRole   Role
+	CurrentLeader int
+	VotesReceived map[int]struct{}
+	SentLength    map[int]int
+	AckedLength   map[int]int
 }
 
 func New(ID int) *Node {
 	return &Node{
-		ID:          ID,
-		ServerState: Follower,
+		ID:           ID,
+		CurrentTerm:  0,
+		VotedFor:     -1,
+		CommitLength: 0,
+
+		CurrentRole:   Follower,
+		CurrentLeader: -1,
+		VotesReceived: map[int]struct{}{},
+		SentLength:    map[int]int{},
+		AckedLength:   map[int]int{},
 	}
 }
