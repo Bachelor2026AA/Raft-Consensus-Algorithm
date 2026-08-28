@@ -10,11 +10,14 @@ service Raft {
 message RequestVoteRequest {
     int32 term = 1;
     int32 candidate_id = 2;
+    int32 logTerm = 3;
+    int32 logLength = 4;
 }
 
 message RequestVoteResponse {
     int32 term = 1;
     bool vote_granted = 2;
+    int32 node_id = 3;
 }
 
 message AppendEntryRequest {
