@@ -43,6 +43,33 @@ func (r *RaftServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest
 	}, nil
 }
 
-func (r *RaftServer) AppendEntries(ctx context.Context, req *pb.AppendEntryRequest) (*pb.AppendEntryResponse, error) {
+func (r *RaftServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
+	if len(req.Suffix) > 0 && len(log) > int(req.PrefixLen) {
+		index := min(len(log), int(req.PrefixLen)+len(req.Suffix)) - 1
 
+		if log[index] != req.Suffix[index-int(req.PrefixLen)] {
+			log = log[:index]
+		}
+	}
+
+	if len(req.Suffix)+int(req.PrefixLen) > len(log) {
+		for index := 0; index < len(req.Suffix); index++ {
+			log = append(log, req.Suffix[index])
+		}
+	}
+	// resolve conflict
+
+	if req.LeaderCommit > int32(commitLength) {
+		for index := commitLength; index < int(req.LeaderCommit) && index < len(log); index++ {
+			deliver(log[index])
+		}
+
+		commitLength = min(int(req.LeaderCommit), len(log))
+	}
+
+	return &pb.AppendEntriesResponse{
+		Term:    currentTerm,
+		Ack:     int32(len(log)),
+		Success: true,
+	}, nil
 }
