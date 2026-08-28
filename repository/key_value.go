@@ -19,6 +19,21 @@ type KeyValueRepositoryImpl struct {
 	db *bolt.DB
 }
 
+func (r *KeyValueRepositoryImpl) get(ctx context.Context, key string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *KeyValueRepositoryImpl) update(ctx context.Context, key string, value int) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *KeyValueRepositoryImpl) delete(ctx context.Context, key string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (r *KeyValueRepositoryImpl) CreateBucket(ctx context.Context) {
 	err := r.db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte("KeyValue"))
@@ -33,7 +48,7 @@ func (r *KeyValueRepositoryImpl) CreateBucket(ctx context.Context) {
 	// TODO use error
 }
 
-func (r *KeyValueRepositoryImpl) Create(ctx context.Context, key string, value int) error {
+func (r *KeyValueRepositoryImpl) create(ctx context.Context, key string, value int) error {
 	return r.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("KeyValue"))
 		err := b.Put([]byte(key), []byte(string(value)))
