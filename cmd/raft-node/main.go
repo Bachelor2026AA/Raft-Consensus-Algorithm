@@ -38,8 +38,8 @@ func main() {
 	}
 
 	serv := grpc.NewServer()
-	handler := raft.RaftServer{}
-	pb.RegisterRaftServer(serv, &handler)
+	node := raft.NewNode(*id)
+	pb.RegisterRaftServer(serv, node)
 
 	log.Printf("Node %d is serving on port %d", *id, *port)
 	if err := serv.Serve(lis); err != nil {

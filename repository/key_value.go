@@ -22,11 +22,15 @@ type KeyValueRepositoryImpl struct {
 func (r *KeyValueRepositoryImpl) CreateBucket(ctx context.Context) {
 	err := r.db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte("KeyValue"))
+		_ = b
+		// TODO maybe use b
 		if err != nil {
 			return fmt.Errorf("Create Bucket has failed %s", err)
 		}
 		return nil
 	})
+	_ = err
+	// TODO use error
 }
 
 func (r *KeyValueRepositoryImpl) Create(ctx context.Context, key string, value int) error {
@@ -41,7 +45,9 @@ func (r *KeyValueRepositoryImpl) Create(ctx context.Context, key string, value i
 }
 
 func (r *KeyValueRepositoryImpl) save(ctx context.Context) {
-	err := db.Batch(func(tx *bolt.Tx) error {
+	err := r.db.Batch(func(tx *bolt.Tx) error {
 		return nil
 	})
+	_ = err
+	// TODO use error
 }
