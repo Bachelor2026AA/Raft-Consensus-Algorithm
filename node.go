@@ -1,6 +1,4 @@
-package node
-
-import "raft-consensus/domain"
+package raft
 
 type Role int
 
@@ -16,7 +14,7 @@ type Node struct {
 	ID           int
 	CurrentTerm  int
 	VotedFor     int
-	Logs         []domain.Log
+	Logs         []Log
 	CommitLength int
 
 	// reset on crash

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"raft-consensus/handler"
+	"raft-consensus"
 	pb "raft-consensus/proto"
 	"strings"
 
@@ -38,7 +38,7 @@ func main() {
 	}
 
 	serv := grpc.NewServer()
-	handler := handler.RaftServer{}
+	handler := raft.RaftServer{}
 	pb.RegisterRaftServer(serv, &handler)
 
 	log.Printf("Node %d is serving on port %d", *id, *port)
