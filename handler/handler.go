@@ -33,6 +33,7 @@ func (r *RaftServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesReq
 			log = append(log, req.Suffix[index])
 		}
 	}
+	// resolve conflict
 
 	if req.LeaderCommit > int32(commitLength) {
 		for index := commitLength; index < int(req.LeaderCommit) && index < len(log); index++ {
