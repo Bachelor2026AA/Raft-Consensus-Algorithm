@@ -31,11 +31,18 @@ type Node struct {
 	AckedLength   map[int]int
 
 	pb.UnimplementedRaftServer
-	repo   repository.LogEntryRepository
-	kvrepo repository.KeyValueRepository
+	logEntryRepo repository.LogEntryRepository
+	keyValueRepo repository.KeyValueRepository
+
+	peerClients []pb.RaftClient
 }
 
-func NewNode(ID int) *Node {
+func NewNode(
+	ID int,
+	logEntryRepo repository.LogEntryRepository,
+	keyValueRepo repository.KeyValueRepository,
+	peerClients []pb.RaftClient,
+) *Node {
 	return &Node{
 		ID:           ID,
 		Term:         0,
@@ -47,5 +54,10 @@ func NewNode(ID int) *Node {
 		VotesReceived: map[int]struct{}{},
 		SentLength:    map[int]int{},
 		AckedLength:   map[int]int{},
+
+		logEntryRepo: logEntryRepo,
+		keyValueRepo: keyValueRepo,
+
+		peerClients: peerClients,
 	}
 }
