@@ -1,14 +1,14 @@
-package domain
+package raft
 
 import "errors"
 
-type LogEntry struct {
+type Log struct {
 	Index   int
 	Term    int
 	Command string
 }
 
-func (rl *LogEntry) Validate() error {
+func (rl *Log) Validate() error {
 	if rl.Index <= 0 {
 		return errors.New("Index cant be negative")
 	}
