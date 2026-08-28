@@ -1,8 +1,7 @@
-package handler
+package raft
 
 import (
 	"context"
-	"raft-consensus/node"
 	pb "raft-consensus/proto"
 	"raft-consensus/repository"
 )
@@ -11,7 +10,7 @@ type RaftServer struct {
 	pb.UnimplementedRaftServer
 	repo   repository.LogEntryRepository
 	kvrepo repository.KeyValueRepository
-	node   node.Node
+	node   Node
 }
 
 func (r *RaftServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb.RequestVoteResponse, error) {
@@ -22,7 +21,7 @@ func (r *RaftServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest
 
 	if cTerm > r.node.CurrentTerm {
 		r.node.CurrentTerm = cTerm
-		r.node.CurrentRole = node.Follower
+		r.node.CurrentRole = Follower
 		r.node.VotedFor = -1
 	}
 	lastTerm := 0
