@@ -37,33 +37,39 @@ func (n *Node) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb
 }
 
 func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
-	//if len(req.Suffix) > 0 && len(log) > int(req.PrefixLen) {
-	//	index := min(len(log), int(req.PrefixLen)+len(req.Suffix)) - 1
-	//
-	//	if log[index] != req.Suffix[index-int(req.PrefixLen)] {
-	//		log = log[:index]
-	//	}
-	//}
-	//
-	//if len(req.Suffix)+int(req.PrefixLen) > len(log) {
-	//	for index := 0; index < len(req.Suffix); index++ {
-	//		log = append(log, req.Suffix[index])
-	//	}
-	//}
-	//// resolve conflict
-	//
-	//if req.LeaderCommit > int32(commitLength) {
-	//	for index := commitLength; index < int(req.LeaderCommit) && index < len(log); index++ {
-	//		deliver(log[index])
-	//	}
-	//
-	//	commitLength = min(int(req.LeaderCommit), len(log))
-	//}
-	//
-	//return &pb.AppendEntriesResponse{
-	//	Term:    currentTerm,
-	//	Ack:     int32(len(log)),
-	//	Success: true,
-	//}, nil
-	return nil, nil
+	if len(req.Suffix) > 0 && len(n.Logs) > int(req.PrefixLen) {
+		index := min(len(n.Logs), int(req.PrefixLen)+len(req.Suffix)) - 1
+
+		if n.Logs[index].Term != int(req.Suffix[index-int(req.PrefixLen)]) {
+			n.Logs = n.Logs[:index]
+		}
+	}
+
+	if len(req.Suffix)+int(req.PrefixLen) > len(n.Logs) {
+		for index := 0; index < len(req.Suffix); index++ {
+			n.Logs = append(n.Logs, Log{
+				Term: int(req.Suffix[index]),
+			})
+		}
+	}
+
+	if req.LeaderCommit > int32(n.CommitLength) {
+		for index := n.CommitLength; index < int(req.LeaderCommit) && index < len(n.Logs); index++ {
+			Deliver(n.Logs[index])
+		}
+		n.CommitLength = min(int(req.LeaderCommit), len(n.Logs))
+	}
+	if n.CommitLength == min(int(req.LeaderCommit), len(n.Logs)) {
+		return &pb.AppendEntriesResponse{
+			Term:    int32(n.Term),
+			Ack:     int32(len(n.Logs)),
+			Success: true,
+		}, nil
+	} else {
+		return &pb.AppendEntriesResponse{
+			Term:    int32(n.Term),
+			Ack:     0,
+			Success: false,
+		}, nil
+	}
 }
