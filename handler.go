@@ -3,7 +3,6 @@ package raft
 import (
 	"context"
 	pb "raft-consensus/proto"
-	
 )
 
 func (n *Node) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb.RequestVoteResponse, error) {
@@ -58,13 +57,19 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 		for index := n.CommitLength; index < int(req.LeaderCommit) && index < len(n.Logs); index++ {
 			Deliver(n.Logs[index])
 		}
-
 		n.CommitLength = min(int(req.LeaderCommit), len(n.Logs))
 	}
-
-	return &pb.AppendEntriesResponse{
-		Term:    int32(n.Term),
-		Ack:     int32(len(n.Logs)),
-		Success: true,
-	}, nil
+	if n.CommitLength == min(int(req.LeaderCommit), len(n.Logs)) {
+		return &pb.AppendEntriesResponse{
+			Term:    int32(n.Term),
+			Ack:     int32(len(n.Logs)),
+			Success: true,
+		}, nil
+	} else {
+		return &pb.AppendEntriesResponse{
+			Term:    int32(n.Term),
+			Ack:     0,
+			Success: false,
+		}, nil
+	}
 }
