@@ -1,8 +1,10 @@
 package raft
 
 import (
+	"math/rand/v2"
 	pb "raft-consensus/proto"
 	"raft-consensus/repository"
+	"time"
 )
 
 type Role int
@@ -34,16 +36,19 @@ type Node struct {
 	logEntryRepo repository.LogEntryRepository
 	keyValueRepo repository.KeyValueRepository
 
-	peerClients []pb.RaftClient
+	peerClients map[int]pb.RaftClient
+	peerIds     []int
+
+	timer *time.Timer
 }
 
 func NewNode(
 	ID int,
 	logEntryRepo repository.LogEntryRepository,
 	keyValueRepo repository.KeyValueRepository,
-	peerClients []pb.RaftClient,
+	peerClients map[int]pb.RaftClient,
 ) *Node {
-	return &Node{
+	n := &Node{
 		ID:           ID,
 		Term:         0,
 		VotedFor:     -1,
@@ -60,4 +65,8 @@ func NewNode(
 
 		peerClients: peerClients,
 	}
+	minDur := 8 * time.Second
+	maxDur := 10 * time.Second
+	n.timer = time.AfterFunc(minDur+rand.N(maxDur-minDur), n.StartElection)
+	return n
 }
