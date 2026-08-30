@@ -22,7 +22,7 @@ message RequestVoteResponse {
 
 message Log{
     int32 term = 1;
-    bytes data = 2;
+    string data = 2;
 }
 
 message AppendEntriesRequest {
@@ -31,7 +31,7 @@ message AppendEntriesRequest {
     int32 prefixLen = 3;
     int32 prefixTerm = 4;
     int32 leaderCommit =5; 
-    repeated int32 suffix = 6;
+    repeated Log suffix = 6;
 }
 
 message AppendEntriesResponse {

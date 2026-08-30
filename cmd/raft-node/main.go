@@ -56,15 +56,16 @@ func parseFlags() (int, int, string) {
 	return *id, *port, *peersRaw
 }
 
-func peerClients(peers string) []pb.RaftClient {
-	var peerClients []pb.RaftClient
-	for _, peer := range strings.Split(peers, ",") {
+func peerClients(peers string) map[int]pb.RaftClient {
+	peerClients := map[int]pb.RaftClient{}
+	for i, peer := range strings.Split(peers, ",") {
 		conn, err := grpc.NewClient(peer, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("Failed to connect: %v", err)
 		}
 		defer conn.Close()
-		peerClients = append(peerClients, pb.NewRaftClient(conn))
+		i++
+		peerClients[i] = pb.NewRaftClient(conn)
 	}
 	return peerClients
 }

@@ -40,7 +40,7 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 	if len(req.Suffix) > 0 && len(n.Logs) > int(req.PrefixLen) {
 		index := min(len(n.Logs), int(req.PrefixLen)+len(req.Suffix)) - 1
 
-		if n.Logs[index].Term != int(req.Suffix[index-int(req.PrefixLen)]) {
+		if n.Logs[index].Term != int(req.Suffix[index-int(req.PrefixLen)].Term) {
 			n.Logs = n.Logs[:index]
 		}
 	}
@@ -48,7 +48,7 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 	if len(req.Suffix)+int(req.PrefixLen) > len(n.Logs) {
 		for index := 0; index < len(req.Suffix); index++ {
 			n.Logs = append(n.Logs, Log{
-				Term: int(req.Suffix[index]),
+				Term: int(req.Suffix[index].Term),
 			})
 		}
 	}
