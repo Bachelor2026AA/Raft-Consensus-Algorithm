@@ -2,16 +2,17 @@ package raft
 
 import (
 	"context"
-	"fmt"
+	"log"
 	pb "raft-consensus/proto"
 	"time"
 )
 
 func (n *Node) StartElection() {
-	fmt.Printf("node %d has started election", n.ID)
+	log.Printf("node %d has started election", n.ID)
 	n.Term++
 	n.Role = Candidate
 	n.VotedFor = n.ID
+	clear(n.VotesReceived)
 	n.VotesReceived[n.ID] = struct{}{}
 
 	lastTerm := 0
@@ -27,26 +28,37 @@ func (n *Node) StartElection() {
 	for _, client := range n.peerClients {
 		voteResp, err := client.RequestVote(context.Background(), voteReq)
 		if err != nil {
-			// TODO log error
+			log.Printf("error: %v", err)
 			return
 		}
 		if n.Role == Candidate && int(voteResp.Term) == n.Term && voteResp.VoteGranted {
-			n.VotesReceived[n.ID] = struct{}{}
-			if len(n.VotesReceived) >= (len(n.peerClients) + 1/2) {
+			n.VotesReceived[int(voteResp.NodeId)] = struct{}{}
+			majority := (len(n.peerClients)+1)/2 + 1
+			if len(n.VotesReceived) >= majority {
+				log.Printf("node %d is the new leader for term %d", n.ID, n.Term)
 				n.Role = Leader
 				n.Leader = n.ID
 				n.timer.Stop()
-				for id, _ := range n.peerClients {
-					n.SentLength[id] = len(n.Logs)
-					n.AckedLength[id] = 0
-					n.replicateLog(context.Background(), n.Leader, id)
+
+				ticker := time.NewTicker(100 * time.Millisecond)
+				defer ticker.Stop()
+
+				for {
+					select {
+					case <-ticker.C:
+						for id, _ := range n.peerClients {
+							n.SentLength[id] = len(n.Logs)
+							n.AckedLength[id] = 0
+							n.replicateLog(context.Background(), n.Leader, id)
+						}
+					}
 				}
 			}
 		} else if int(voteResp.Term) > n.Term {
 			n.Term = int(voteResp.Term)
 			n.Role = Follower
 			n.VotedFor = -1
-			n.timer.Reset(2 * time.Second)
+			n.resetElectionTimer()
 		}
 	}
 }

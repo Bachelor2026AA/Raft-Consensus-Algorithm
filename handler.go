@@ -2,6 +2,7 @@ package raft
 
 import (
 	"context"
+	"log"
 	pb "raft-consensus/proto"
 )
 
@@ -28,7 +29,9 @@ func (n *Node) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb
 	)
 	if voteGranted {
 		n.VotedFor = cId
+		n.resetElectionTimer()
 	}
+	log.Printf("node %d was requested to vote for candidate %d, voted granted: %t", n.ID, cId, voteGranted)
 	return &pb.RequestVoteResponse{
 		Term:        int32(n.Term),
 		VoteGranted: voteGranted,
@@ -37,6 +40,7 @@ func (n *Node) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb
 }
 
 func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
+	n.resetElectionTimer()
 	if len(req.Suffix) > 0 && len(n.Logs) > int(req.PrefixLen) {
 		index := min(len(n.Logs), int(req.PrefixLen)+len(req.Suffix)) - 1
 
@@ -65,11 +69,23 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 			Ack:     int32(len(n.Logs)),
 			Success: true,
 		}, nil
-	} else {
-		return &pb.AppendEntriesResponse{
-			Term:    int32(n.Term),
-			Ack:     0,
-			Success: false,
-		}, nil
 	}
+	return &pb.AppendEntriesResponse{
+		Term:    int32(n.Term),
+		Ack:     0,
+		Success: false,
+	}, nil
+
+}
+
+func vote(
+	term, votedFor int, logs []Log,
+	cTerm, cLogTerm, cLogLength, cId int,
+) bool {
+	lastTerm := 0
+	if len(logs) > 0 {
+		lastTerm = logs[len(logs)-1].Term
+	}
+	logOk := cLogTerm > lastTerm || (cLogTerm == lastTerm && cLogLength >= len(logs))
+	return cTerm == term && logOk && (votedFor == -1 || votedFor == cId)
 }

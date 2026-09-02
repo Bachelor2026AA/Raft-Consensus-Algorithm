@@ -70,3 +70,10 @@ func NewNode(
 	n.timer = time.AfterFunc(minDur+rand.N(maxDur-minDur), n.StartElection)
 	return n
 }
+
+func (n *Node) resetElectionTimer() {
+	minDur := 8 * time.Second
+	maxDur := 10 * time.Second
+	n.timer.Stop()
+	n.timer.Reset(minDur + rand.N(maxDur-minDur))
+}

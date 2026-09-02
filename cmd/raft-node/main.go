@@ -17,7 +17,16 @@ import (
 func main() {
 	id, port, peers := parseFlags()
 
-	clients := peerClients(peers)
+	clients := map[int]pb.RaftClient{}
+	for i, peer := range strings.Split(peers, ",") {
+		conn, err := grpc.NewClient(peer, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("Failed to connect: %v", err)
+		}
+		defer conn.Close()
+		i++
+		clients[i] = pb.NewRaftClient(conn)
+	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -54,18 +63,4 @@ func parseFlags() (int, int, string) {
 		log.Fatal("No peers specified")
 	}
 	return *id, *port, *peersRaw
-}
-
-func peerClients(peers string) map[int]pb.RaftClient {
-	peerClients := map[int]pb.RaftClient{}
-	for i, peer := range strings.Split(peers, ",") {
-		conn, err := grpc.NewClient(peer, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatalf("Failed to connect: %v", err)
-		}
-		defer conn.Close()
-		i++
-		peerClients[i] = pb.NewRaftClient(conn)
-	}
-	return peerClients
 }
