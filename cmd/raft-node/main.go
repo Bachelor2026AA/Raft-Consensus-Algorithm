@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"raft-consensus"
 	pb "raft-consensus/proto"
 	"raft-consensus/repository"
@@ -15,7 +16,7 @@ import (
 )
 
 func main() {
-	id, port, peers := parseFlags()
+	id, grpcPort, httpPort, peers := parseFlags()
 
 	clients := map[int]pb.RaftClient{}
 	for i, peer := range strings.Split(peers, ",") {
@@ -28,7 +29,7 @@ func main() {
 		clients[i] = pb.NewRaftClient(conn)
 	}
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -40,15 +41,28 @@ func main() {
 	node := raft.NewNode(id, logEntryRepo, keyValueRepo, clients)
 	pb.RegisterRaftServer(serv, node)
 
-	log.Printf("Node %d is serving on port %d", id, port)
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /keys/{id}", node.Get)
+	mux.HandleFunc("POST /keys", node.Create)
+	mux.HandleFunc("PATCH /keys/{id}", node.Update)
+	mux.HandleFunc("DELETE /keys/{id}", node.Delete)
+	go func() {
+		log.Printf("Node %d is serving http on port %d", id, httpPort)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", httpPort), mux); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	log.Printf("Node %d is serving grpc on port %d", id, grpcPort)
 	if err := serv.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
 
-func parseFlags() (int, int, string) {
+func parseFlags() (int, int, int, string) {
 	id := flag.Int("id", 0, "Node ID")
-	port := flag.Int("port", 0, "Listening port")
+	grpcPort := flag.Int("grpc-port", 0, "GRPC listening port")
+	httpPort := flag.Int("http-port", 0, "HTTP listening port")
 	peersRaw := flag.String("peers", "", "Comma-separated peer addresses")
 
 	flag.Parse()
@@ -56,11 +70,14 @@ func parseFlags() (int, int, string) {
 	if *id == 0 {
 		log.Fatal("No id specified")
 	}
-	if *port == 0 {
-		log.Fatal("No port specified")
+	if *grpcPort == 0 {
+		log.Fatal("No GRPC port specified")
+	}
+	if *httpPort == 0 {
+		log.Fatal("No HTTP port specified")
 	}
 	if *peersRaw == "" {
 		log.Fatal("No peers specified")
 	}
-	return *id, *port, *peersRaw
+	return *id, *grpcPort, *httpPort, *peersRaw
 }
