@@ -13,7 +13,7 @@ func ReplicateLog(id int, follower int) {
 	panic("Not implemented")
 }
 
-func (n *Node) handleAppendEntriesReqeust(follower int, resp *pb.AppendEntriesResponse) {
+func (n *Node) handleAppendEntriesResponse(follower int, resp *pb.AppendEntriesResponse) {
 
 	if int(resp.GetTerm()) > n.Term {
 		n.Term = int(resp.GetTerm())
