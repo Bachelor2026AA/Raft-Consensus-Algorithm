@@ -52,7 +52,7 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 
 	if len(req.Suffix)+int(req.PrefixLen) > len(n.Logs) {
 		for index := 0; index < len(req.Suffix); index++ {
-			n.Logs = append(n.Logs, customLog{
+			n.Logs = append(n.Logs, customLog.Log{
 				Term: int(req.Suffix[index].Term),
 			})
 		}
@@ -81,7 +81,7 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 }
 
 func vote(
-	term, votedFor int, logs []customLog,
+	term, votedFor int, logs []customLog.Log,
 	cTerm, cLogTerm, cLogLength, cId int,
 ) bool {
 	lastTerm := 0
