@@ -8,7 +8,6 @@ import (
 )
 
 type LogEntryRepository interface {
-	CreateLogBucket(ctx context.Context) error
 	Append(ctx context.Context, command string, term int) error
 	Get(ctx context.Context, command string) (int, error)
 	GetFromIndex(ctx context.Context, index int) error
@@ -19,9 +18,18 @@ type LogEntryRepositoryImpl struct {
 	db *bolt.DB
 }
 
-func (l *LogEntryRepositoryImpl) CreateLogBucket(ctx context.Context) error {
+func NewLogEntryRepository(db *bolt.DB) (LogEntryRepository, error) {
+	repo := &LogEntryRepositoryImpl{
+		db: db}
+	if err := repo.createLogBucket(); err != nil {
+		return nil, err
+	}
+	return repo, nil
+}
+
+func (l *LogEntryRepositoryImpl) createLogBucket() error {
 	return l.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("logs"))
+		_, err := tx.CreateBucketIfNotExists([]byte("log_entries"))
 		return err
 	})
 }
