@@ -1,9 +1,9 @@
-package raft
+package log
 
 import "errors"
 
 type Log struct {
-	Index   int
+	Index   uint64
 	Term    int
 	Command string
 }
