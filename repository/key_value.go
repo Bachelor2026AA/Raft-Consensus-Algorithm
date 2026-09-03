@@ -17,21 +17,19 @@ type KeyValueRepositoryImpl struct {
 	db *bolt.DB
 }
 
-func NewKeyValueRepository(db *bolt.DB) (KeyValueRepository, error) {
-	repo := &KeyValueRepositoryImpl{db: db}
-
-	if err := repo.createKeyValueBucket(); err != nil {
-		return nil, err
-	}
-	return repo, nil
-}
-
-func (r *KeyValueRepositoryImpl) createKeyValueBucket() error {
-	return r.db.Update(func(tx *bolt.Tx) error {
+func NewKeyValueRepository(db *bolt.DB) (*KeyValueRepositoryImpl, error) {
+	err := db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte("KeyValue"))
 		return err
 	})
+	if err != nil {
+		return nil, err
+	}
+	return &KeyValueRepositoryImpl{
+		db: db,
+	}, nil
 }
+
 func (r *KeyValueRepositoryImpl) create(ctx context.Context, key string, value int) error {
 	panic("implement me")
 }
