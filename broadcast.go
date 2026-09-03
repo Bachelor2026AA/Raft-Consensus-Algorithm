@@ -1,8 +1,11 @@
 package raft
 
-import pb "raft-consensus/proto"
+import (
+	"raft-consensus/domain"
+	pb "raft-consensus/proto"
+)
 
-func Deliver(log Log) {
+func Deliver(log domain.Log) {
 	panic("Not implemented")
 }
 
