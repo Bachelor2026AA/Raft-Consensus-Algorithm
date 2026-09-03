@@ -3,7 +3,7 @@ package raft
 import (
 	"context"
 	"log"
-	"raft-consensus/domain"
+	"raft-consensus/log"
 	pb "raft-consensus/proto"
 )
 
@@ -52,8 +52,7 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 
 	if len(req.Suffix)+int(req.PrefixLen) > len(n.Logs) {
 		for index := 0; index < len(req.Suffix); index++ {
-			n.Logs = append(n.Logs, domain.Log{
-			n.Logs = append(n.Logs, Log{
+			n.Logs = append(n.Logs, log.Log{
 				Term: int(req.Suffix[index].Term),
 			})
 		}
@@ -81,8 +80,7 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 }
 
 func vote(
-	term, votedFor int, logs []domain.Log,
-	term, votedFor int, logs []Log,
+	term, votedFor int, logs []log.Log,
 	cTerm, cLogTerm, cLogLength, cId int,
 ) bool {
 	lastTerm := 0

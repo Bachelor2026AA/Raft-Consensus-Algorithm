@@ -2,7 +2,7 @@ package raft
 
 import (
 	"math/rand/v2"
-	"raft-consensus/domain"
+	"raft-consensus/log"
 	pb "raft-consensus/proto"
 	"raft-consensus/repository"
 	"time"
@@ -22,7 +22,7 @@ type Node struct {
 	ID           int
 	Term         int
 	VotedFor     int
-	Logs         []domain.Log
+	Logs         []log.Log
 	CommitLength int
 
 	// reset on crash
