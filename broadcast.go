@@ -1,11 +1,11 @@
 package raft
 
 import (
-	customLog "raft-consensus/log"
+	"raft-consensus/log"
 	pb "raft-consensus/proto"
 )
 
-func Deliver(log customLog.Log) {
+func Deliver(log log.Log) {
 	panic("Not implemented")
 }
 
