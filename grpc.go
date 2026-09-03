@@ -60,7 +60,8 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 
 	if req.LeaderCommit > int32(n.CommitLength) {
 		for index := n.CommitLength; index < int(req.LeaderCommit) && index < len(n.Logs); index++ {
-			Deliver(n.Logs[index])
+			Deliver()
+			//n.Logs[index]
 		}
 		n.CommitLength = min(int(req.LeaderCommit), len(n.Logs))
 	}
