@@ -5,14 +5,14 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"raft-consensus/log"
+	customLog "raft-consensus/log"
 
 	bolt "go.etcd.io/bbolt"
 )
 
 type LogEntryRepository interface {
-	Append(entry log.Log) error
-	Get(index uint64) (log.Log, error)
+	Append(entry customLog) error
+	Get(index uint64) (customLog, error)
 	GetFromIndex(ctx context.Context, index int) error
 	DeleteFromIndex(ctx context.Context) error
 }
@@ -37,7 +37,7 @@ func (l *LogEntryRepositoryImpl) createLogBucket() error {
 	})
 }
 
-func (l *LogEntryRepositoryImpl) Append(entry log.Log) error {
+func (l *LogEntryRepositoryImpl) Append(entry customLog) error {
 	return l.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("logs"))
 		if b == nil {
@@ -56,8 +56,8 @@ func (l *LogEntryRepositoryImpl) Append(entry log.Log) error {
 	})
 }
 
-func (l *LogEntryRepositoryImpl) Get(index uint64) (log.Log, error) {
-	var entry log.Log
+func (l *LogEntryRepositoryImpl) Get(index uint64) (customLog, error) {
+	var entry customLog
 
 	err := l.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("logs"))
