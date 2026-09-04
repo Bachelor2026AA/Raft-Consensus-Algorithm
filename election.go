@@ -40,17 +40,23 @@ func (n *Node) StartElection() {
 				n.Leader = n.ID
 				n.timer.Stop()
 
-				ticker := time.NewTicker(100 * time.Millisecond)
+				ticker := time.NewTicker(2 * time.Second)
 				defer ticker.Stop()
 
 				for {
 					select {
 					case <-ticker.C:
 						for id, _ := range n.peerClients {
+							log.Print("leader sent heartbeat to followers")
 							n.SentLength[id] = len(n.Logs)
 							n.AckedLength[id] = 0
 							n.replicateLog(context.Background(), n.Leader, id)
 						}
+						//case keyVal := <-n.channel:
+						//	for id, _ := range n.peerClients {
+						//		n.replicateLog(context.Background(), n.Leader, id)
+						//	}
+
 					}
 				}
 			}
@@ -86,6 +92,7 @@ func (n *Node) replicateLog(ctx context.Context, leaderId, followerId int) {
 	}
 	resp, err := n.peerClients[followerId].AppendEntries(ctx, req)
 	if err != nil {
+		log.Printf("error: %v", err)
 		return
 	}
 	if int(resp.Term) > n.Term {
