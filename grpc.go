@@ -41,34 +41,29 @@ func (n *Node) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb
 }
 
 func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
-	n.resetElectionTimer()
-	if len(req.Suffix) > 0 && len(n.Logs) > int(req.PrefixLen) {
-		index := min(len(n.Logs), int(req.PrefixLen)+len(req.Suffix)) - 1
+	term := int(req.GetTerm())
+	prefixLen := int(req.GetTerm())
+	prefixTerm := int(req.GetPrefixTerm())
+	suffix := req.GetSuffix()
+	leaderCommit := int(req.GetLeaderCommit())
 
-		if n.Logs[index].Term != int(req.Suffix[index-int(req.PrefixLen)].Term) {
-			n.Logs = n.Logs[:index]
-		}
+	if term > n.Term {
+		n.Term = int(req.Term)
+		n.VotedFor = -1
 	}
-
-	if len(req.Suffix)+int(req.PrefixLen) > len(n.Logs) {
-		for index := 0; index < len(req.Suffix); index++ {
-			n.Logs = append(n.Logs, raftLog.Log{
-				Term: int(req.Suffix[index].Term),
-			})
-		}
+	if term == n.Term {
+		n.Role = Follower
+		n.Leader = int(req.LeaderId)
+		n.resetElectionTimer()
 	}
-
-	if req.LeaderCommit > int32(n.CommitLength) {
-		for index := n.CommitLength; index < int(req.LeaderCommit) && index < len(n.Logs); index++ {
-			Deliver()
-			//n.Logs[index]
-		}
-		n.CommitLength = min(int(req.LeaderCommit), len(n.Logs))
-	}
-	if n.CommitLength == min(int(req.LeaderCommit), len(n.Logs)) {
+	logOk := (len(n.Logs) >= prefixLen) &&
+		(prefixLen == 0 || n.Logs[prefixLen-1].Term == prefixTerm)
+	if term == n.Term && logOk {
+		n.appendEntriesInner(prefixLen, leaderCommit, suffix)
+		ack := prefixLen + len(suffix)
 		return &pb.AppendEntriesResponse{
 			Term:    int32(n.Term),
-			Ack:     int32(len(n.Logs)),
+			Ack:     int32(ack),
 			Success: true,
 		}, nil
 	}
@@ -77,7 +72,31 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 		Ack:     0,
 		Success: false,
 	}, nil
+}
 
+func (n *Node) appendEntriesInner(prefixLen, leaderCommit int, suffix []*pb.Log) {
+	if len(suffix) > 0 && len(n.Logs) > int(prefixLen) {
+		index := min(len(n.Logs), int(prefixLen)+len(suffix)) - 1
+
+		if n.Logs[index].Term != int(suffix[index-int(prefixLen)].Term) {
+			n.Logs = n.Logs[:index]
+		}
+	}
+
+	if len(suffix)+int(prefixLen) > len(n.Logs) {
+		for i := 0; i < len(suffix); i++ {
+			n.Logs = append(n.Logs, raftLog.Log{
+				Term: int(suffix[i].Term),
+			})
+		}
+	}
+
+	if leaderCommit > n.CommitLength {
+		for i := n.CommitLength; i < leaderCommit && i < len(n.Logs); i++ {
+			Deliver()
+		}
+		n.CommitLength = leaderCommit
+	}
 }
 
 func vote(

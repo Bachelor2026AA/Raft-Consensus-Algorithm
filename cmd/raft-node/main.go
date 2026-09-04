@@ -6,10 +6,12 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"raft-consensus"
-	pb "raft-consensus/proto"
-	"raft-consensus/repository"
 	"strings"
+
+	"raft-consensus"
+	"raft-consensus/repository"
+
+	pb "raft-consensus/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

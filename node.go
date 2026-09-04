@@ -38,9 +38,15 @@ type Node struct {
 	keyValueRepo repository.KeyValueRepository
 
 	peerClients map[int]pb.RaftClient
-	peerIds     []int
 
 	timer *time.Timer
+
+	channel chan keyValue
+}
+
+type keyValue struct {
+	key string
+	val int
 }
 
 func NewNode(
