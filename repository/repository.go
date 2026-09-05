@@ -21,20 +21,17 @@ type LogEntryRepositoryImpl struct {
 	db *bolt.DB
 }
 
-func NewLogEntryRepository(db *bolt.DB) (LogEntryRepository, error) {
-	repo := &LogEntryRepositoryImpl{
-		db: db}
-	if err := repo.createLogBucket(); err != nil {
-		return nil, err
-	}
-	return repo, nil
-}
-
-func (l *LogEntryRepositoryImpl) createLogBucket() error {
-	return l.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("log_entries"))
+func NewLogEntryRepository(db *bolt.DB) (*LogEntryRepositoryImpl, error) {
+	err := db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("logs"))
 		return err
 	})
+	if err != nil {
+		return nil, err
+	}
+	return &LogEntryRepositoryImpl{
+		db: db,
+	}, nil
 }
 
 func (l *LogEntryRepositoryImpl) Append(entry log.Log) error {
